@@ -3,8 +3,7 @@
 // Landing / sign-in. Demo boundary: choosing a role sets the httpOnly session
 // cookie via the API (server-side verified everywhere thereafter).
 
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 
 const ROLES = [
   { role: "client", name: "Aisha Mohammed", detail: "Client workspace — goals, reflections, coaching conversations" },
@@ -13,23 +12,33 @@ const ROLES = [
 ] as const;
 
 export function SignInSection() {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const signIn = async (role: string) => {
     setError(null);
-    const res = await fetch("/api/v1/session", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ role }),
-    });
-    if (!res.ok) {
+    setPending(true);
+    try {
+      const res = await fetch("/api/v1/session", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      if (!res.ok) {
+        setError("Sign-in failed. Please try again.");
+        setPending(false);
+        return;
+      }
+      // Full document navigation for the same reason as sign-out: the workspace
+      // renders from the session cookie, and a client-side push can replay a
+      // cached payload from a previous role. No setPending on success — the
+      // page is on its way out.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- deliberate: a client-side push preserves the cache we need to discard.
+      window.location.assign(`/${role}`);
+    } catch {
       setError("Sign-in failed. Please try again.");
-      return;
+      setPending(false);
     }
-    startTransition(() => router.push(role === "client" ? "/client" : `/${role}`));
-    router.refresh();
   };
 
   return (
