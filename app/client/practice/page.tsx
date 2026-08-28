@@ -17,7 +17,7 @@ export default async function PracticePage() {
   const byId = new Map(practices.map((p) => [p.id, p.title]));
 
   return (
-    <WorkspaceShell person={person} activeHref="/client/practice" sectionLabel="Client workspace" breadcrumb="Your development · Practice">
+    <WorkspaceShell person={person} activeHref="/client/practice" sectionLabel="Coachee workspace" breadcrumb="Your development · Practice">
       <PageIntro
         eyebrow="Practice"
         title="Some things are worked out sitting still."

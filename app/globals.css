@@ -477,6 +477,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .oy-breath-orb.is-in { transform: scale(1); }
 .oy-breath-orb.is-out { transform: scale(.62); }
 .oy-breath-cue { color: var(--oy-plum); font-family: "DM Mono", monospace; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+.oy-practice-guidance { width: 100%; max-width: 520px; padding: 15px 17px; border-radius: 12px; border-left: 3px solid var(--oy-plum); background: #f6eef2; color: var(--oy-ink); font-size: 14px; line-height: 1.6; text-align: left; }
+.oy-practice-guidance.is-escalation { border-left-color: #a34b32; background: #f3e3da; }
 
 /* Sign-in. Each choice is a role label beside a long descriptive string; in a
    flex row on a phone the description is squeezed against a fixed-width label

@@ -2,6 +2,8 @@ import type { NextRequest } from "next/server";
 import { guard, guardLimited, ok, readJson } from "@/lib/api/http";
 import { requireRole } from "@/lib/auth/session";
 import { repo } from "@/lib/db/store";
+import { recordOversight } from "@/lib/coaching/context";
+import { isEscalationMessage } from "@/lib/coaching/engine";
 import { NotFoundError, num, optional, str, validateObject } from "@/lib/shared/validation";
 
 /** Practices available to a coachee, with their own history. */
@@ -55,5 +57,20 @@ export const POST = async (request: NextRequest) =>
         })
       : null;
 
-    return ok({ completion, journalEntry: entry }, { status: 201 });
+    // A coachee can finish a practice without ever asking the coach to respond,
+    // so the reflection is screened here too. Otherwise the quietest surface in
+    // the product would be the one place a disclosure could pass unseen.
+    const safetyFlag = input.reflection && isEscalationMessage(input.reflection) ? "escalation" : "none";
+    if (safetyFlag === "escalation") {
+      recordOversight({
+        person,
+        safetyFlag,
+        summary: `SAFETY ESCALATION — flagged in a reflection saved from the practice "${practice.title}". Review promptly.`,
+        escalationDetail: `Practice reflection matched escalation pattern during "${practice.title}".`,
+        entityType: "practice",
+        entityId: practice.id,
+      });
+    }
+
+    return ok({ completion, journalEntry: entry, safetyFlag }, { status: 201 });
   });

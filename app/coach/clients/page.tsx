@@ -12,11 +12,11 @@ export default async function CoachClientsPage() {
   const program = repo.programs.listByCoach(person.id)[0] ?? null;
 
   return (
-    <WorkspaceShell person={person} activeHref="/coach/clients" sectionLabel="Coach workspace" breadcrumb="Coach · Clients">
-      <PageIntro eyebrow="Coach · Clients" title="Assign, enroll, and steward." subtitle="Assignment controls which journeys you can see; enrollment attaches a curriculum to their coaching context." />
+    <WorkspaceShell person={person} activeHref="/coach/clients" sectionLabel="Coach workspace" breadcrumb="Coach · Coachees">
+      <PageIntro eyebrow="Coach · Coachees" title="Assign, enroll, and steward." subtitle="Assignment controls which journeys you can see; enrollment attaches a curriculum to their coaching context." />
       <div className="oy-today-grid">
         <article className="oy-card oy-plan-card" style={{ padding: 22 }}>
-          <div className="oy-card-label">Assign a client</div>
+          <div className="oy-card-label">Assign a coachee</div>
           <AssignmentControls availableClients={available.map((c) => ({ id: c.id, name: c.name, email: c.email }))} />
         </article>
         <aside style={{ display: "grid", gap: 18 }}>
@@ -31,7 +31,7 @@ export default async function CoachClientsPage() {
               </article>
             );
           })}
-          {!assignedIds.length && <article className="oy-card oy-plan-card" style={{ padding: 20 }}><p className="oy-card-copy">Assign a client on the left to begin.</p></article>}
+          {!assignedIds.length && <article className="oy-card oy-plan-card" style={{ padding: 20 }}><p className="oy-card-copy">Assign a coachee on the left to begin.</p></article>}
         </aside>
       </div>
     </WorkspaceShell>

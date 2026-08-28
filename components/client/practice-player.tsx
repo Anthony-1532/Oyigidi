@@ -26,6 +26,8 @@ export function PracticePlayer({ practices }: { practices: Practice[] }) {
   const [paused, setPaused] = useState(false);
   const [reflection, setReflection] = useState("");
   const [saving, setSaving] = useState(false);
+  const [asking, setAsking] = useState(false);
+  const [guidance, setGuidance] = useState<{ content: string; safetyFlag: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [finished, setFinished] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -45,6 +47,7 @@ export function PracticePlayer({ practices }: { practices: Practice[] }) {
     setPresent(0);
     setPaused(false);
     setReflection("");
+    setGuidance(null);
     setError(null);
     setFinished(false);
   };
@@ -93,6 +96,29 @@ export function PracticePlayer({ practices }: { practices: Practice[] }) {
   useEffect(() => {
     if (active) headingRef.current?.focus();
   }, [index, active]);
+
+  const askCoach = async (current: Step) => {
+    if (!active || !reflection.trim()) return;
+    setAsking(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/v1/practices/guide", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ practiceId: active.id, stepId: current.id, note: reflection.trim() }),
+      });
+      const payload = await res.json().catch(() => null);
+      if (!res.ok) {
+        setError(payload?.error?.message ?? "Your coach could not respond just now. What you wrote is still here.");
+        return;
+      }
+      setGuidance({ content: payload.data.content, safetyFlag: payload.data.safetyFlag });
+    } catch {
+      setError("Your coach could not respond just now. What you wrote is still here.");
+    } finally {
+      setAsking(false);
+    }
+  };
 
   const finish = async () => {
     if (!active) return;
@@ -183,14 +209,29 @@ export function PracticePlayer({ practices }: { practices: Practice[] }) {
       )}
 
       {step?.kind === "reflect" && (
-        <textarea
-          className="oy-practice-input"
-          rows={5}
-          value={reflection}
-          onChange={(event) => setReflection(event.target.value)}
-          placeholder="Write as much or as little as you want — this is yours."
-          aria-label={step.title}
-        />
+        <>
+          <textarea
+            className="oy-practice-input"
+            rows={5}
+            value={reflection}
+            onChange={(event) => setReflection(event.target.value)}
+            placeholder="Write as much or as little as you want — this is yours."
+            aria-label={step.title}
+          />
+          <button
+            type="button"
+            className="oy-button is-muted"
+            disabled={asking || !reflection.trim()}
+            onClick={() => void askCoach(step)}
+          >
+            {asking ? "Your coach is reading…" : guidance ? "Ask again" : "Ask your coach"}
+          </button>
+          {guidance && (
+            <div className={`oy-practice-guidance oy-md ${guidance.safetyFlag === "escalation" ? "is-escalation" : ""}`} role="status" aria-live="polite">
+              {guidance.content}
+            </div>
+          )}
+        </>
       )}
 
       <div className="oy-practice-timer" role="status" aria-live="off">

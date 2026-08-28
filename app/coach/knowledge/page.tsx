@@ -9,7 +9,7 @@ export default async function CoachKnowledgePage() {
   const documents = repo.knowledge.list();
   return (
     <WorkspaceShell person={person} activeHref="/coach/knowledge" sectionLabel="Coach workspace" breadcrumb="Coach · Knowledge">
-      <PageIntro eyebrow="Coach · Knowledge" title="Approve what the AI may draw on." subtitle="Uploaded text is chunked and retrieved only inside your assigned clients' coaching conversations." />
+      <PageIntro eyebrow="Coach · Knowledge" title="Approve what the AI may draw on." subtitle="Uploaded text is chunked and retrieved only inside your assigned coachees' coaching conversations." />
       <div className="oy-coach-grid">
         <article className="oy-card oy-plan-card" style={{ padding: 22 }}>
           <div className="oy-card-label">Approved sources</div>

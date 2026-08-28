@@ -11,7 +11,7 @@ export default async function LearnPage() {
   const latestResult = repo.assessments.latestResult(person.id);
 
   return (
-    <WorkspaceShell person={person} activeHref="/client/learn" sectionLabel="Client workspace" breadcrumb="Your development · Learn">
+    <WorkspaceShell person={person} activeHref="/client/learn" sectionLabel="Coachee workspace" breadcrumb="Your development · Learn">
       <PageIntro
         eyebrow="Learn"
         title={assessment ? "Find the most useful place to begin." : "No active compass check yet."}

@@ -9,7 +9,7 @@ export default async function ReflectPage() {
   const person = (await getSession(await headers()))!;
   const journals = repo.journals.listByClient(person.id);
   return (
-    <WorkspaceShell person={person} activeHref="/client/reflect" sectionLabel="Client workspace" breadcrumb="Your development · Reflect">
+    <WorkspaceShell person={person} activeHref="/client/reflect" sectionLabel="Coachee workspace" breadcrumb="Your development · Reflect">
       <PageIntro
         eyebrow="Reflect"
         title="Notice what is changing."

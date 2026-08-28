@@ -1,8 +1,9 @@
 import type { NextRequest } from "next/server";
 import { guardLimited, ok, readJson } from "@/lib/api/http";
 import { requireRole } from "@/lib/auth/session";
-import { repo, audit } from "@/lib/db/store";
-import { generateCoachingResponse, selectKnowledgeSnippets } from "@/lib/coaching/engine";
+import { repo } from "@/lib/db/store";
+import { buildCoacheeContext, recordOversight } from "@/lib/coaching/context";
+import { generateCoachingResponse } from "@/lib/coaching/engine";
 import { str, validateObject } from "@/lib/shared/validation";
 
 /**
@@ -20,32 +21,10 @@ export const POST = async (request: NextRequest) =>
     const conversation = repo.conversations.ensure(person.id);
     const history = repo.messages.forConversation(conversation.id);
 
-    const goals = repo.goals.listByClient(person.id);
-    const latestResult = repo.assessments.latestResult(person.id);
-    const enrollment = repo.enrollments.forClients([person.id])[0];
-    const program = enrollment ? repo.programs.get(enrollment.programId) : null;
-    const modules = program ? repo.programs.detail(program.id).modules : [];
-    const objectives = program ? repo.programs.detail(program.id).objectives : [];
-
-    // Retrieval: score approved chunks against this message plus coach intent.
-    const chunks = repo.knowledge.readyChunks().map((c) => c.content);
-    const query = [content, program?.aiInstructions ?? ""].filter(Boolean).join(" ");
-    const snippets = selectKnowledgeSnippets(chunks, query, 3);
-
     const result = await generateCoachingResponse({
       message: content,
       history: history.map((m) => ({ role: m.role, content: m.content })),
-      context: {
-        preferredName: person.preferredName ?? person.name,
-        developmentFocus: person.developmentFocus ?? null,
-        goals: goals.map((g) => ({ title: g.title, progressPercent: g.progressPercent })),
-        assessmentInsight: latestResult?.insight ?? null,
-        curriculum: program
-          ? { programTitle: program.title, moduleTitle: modules[0]?.title ?? null, objective: objectives[0]?.title ?? null }
-          : null,
-        coachInstructions: program?.aiInstructions ?? null,
-        knowledgeSnippets: snippets,
-      },
+      context: buildCoacheeContext(person, content),
     });
 
     const userMessage = repo.messages.append({ conversationId: conversation.id, role: "client", content, safetyFlag: "none" });
@@ -57,20 +36,17 @@ export const POST = async (request: NextRequest) =>
     });
 
     // Every exchange is saved as an AI session so coaches keep human oversight.
-    const assignment = repo.assignments.activeForCoach("usr_coach").find((a) => a.clientId === person.id);
-    if (assignment) {
-      const session = repo.aiSessions.start({ clientId: person.id, coachId: assignment.coachId });
-      repo.aiSessions.review(
-        session.id,
+    recordOversight({
+      person,
+      safetyFlag: result.safetyFlag,
+      summary:
         result.safetyFlag === "escalation"
-          ? `SAFETY ESCALATION — client message flagged; immediate supportive response issued. Review promptly.`
+          ? `SAFETY ESCALATION — coachee message flagged; immediate supportive response issued. Review promptly.`
           : `Exchange about: ${content.slice(0, 120)}`,
-      );
-    }
-
-    if (result.safetyFlag === "escalation") {
-      audit(person.id, "safety_escalation", "conversation", conversation.id, "Client message matched escalation pattern; supportive response returned.");
-    }
+      escalationDetail: "Coachee message matched escalation pattern; supportive response returned.",
+      entityType: "conversation",
+      entityId: conversation.id,
+    });
 
     return ok({
       userMessage,

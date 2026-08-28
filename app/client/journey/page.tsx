@@ -9,7 +9,7 @@ export default async function JourneyPage() {
   const goals = repo.goals.listByClient(person.id);
   const average = repo.goals.averageFor(person.id);
   return (
-    <WorkspaceShell person={person} activeHref="/client/journey" sectionLabel="Client workspace" breadcrumb="Your development · My journey">
+    <WorkspaceShell person={person} activeHref="/client/journey" sectionLabel="Coachee workspace" breadcrumb="Your development · My journey">
       <PageIntro eyebrow="My journey" title="Goals that hold their meaning." subtitle="Track each intention with honest, small progress updates." />
       <div className="oy-today-grid">
         <article className="oy-card oy-plan-card" style={{ padding: 22 }}>

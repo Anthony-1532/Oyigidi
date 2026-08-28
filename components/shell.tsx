@@ -23,7 +23,7 @@ export const NAV: Record<Person["role"], NavItem[]> = {
   ],
   coach: [
     ["Overview", "/coach", LayoutDashboard],
-    ["Clients", "/coach/clients", UsersRound],
+    ["Coachees", "/coach/clients", UsersRound],
     ["Programs", "/coach/programs", BookOpen],
     ["Knowledge", "/coach/knowledge", FolderUp],
     ["Group sessions", "/coach/sessions", CalendarDays],
@@ -36,6 +36,10 @@ export const NAV: Record<Person["role"], NavItem[]> = {
     ["Frameworks", "/admin/frameworks", Settings2],
   ],
 };
+
+// The role identifier stays `client` through the cookie, routes and types; only
+// what a person reads says coachee.
+const roleLabel: Record<Person["role"], string> = { client: "coachee", coach: "coach", admin: "admin" };
 
 const initials = (name: string) =>
   name.split(/\s+/).map((p) => p[0]).join("").slice(0, 2).toUpperCase() || "OM";
@@ -60,8 +64,8 @@ export function WorkspaceShell({
       <div className="oy-shell">
         <aside className="oy-sidebar">
           <div className="oy-brand"><span className="oy-brand-mark">o</span><span>oyigidi</span></div>
-          <div className="oy-role-label">{person.role} workspace</div>
-          <nav className="oy-nav" aria-label={`${person.role} navigation`}>
+          <div className="oy-role-label">{roleLabel[person.role]} workspace</div>
+          <nav className="oy-nav" aria-label={`${roleLabel[person.role]} navigation`}>
             {nav.map(([label, href, Icon]) => (
               <Link key={href} href={href} className={`oy-nav-button ${activeHref === href ? "is-active" : ""}`} aria-current={activeHref === href ? "page" : undefined}>
                 <Icon /><span>{label}</span>
@@ -92,7 +96,7 @@ export function WorkspaceShell({
               <SignOutButton />
             </div>
           </header>
-          <nav className="oy-mobile-nav" aria-label={`${person.role} navigation`}>
+          <nav className="oy-mobile-nav" aria-label={`${roleLabel[person.role]} navigation`}>
             {nav.map(([label, href, Icon]) => (
               <Link key={href} href={href} className={`oy-mobile-nav-button ${activeHref === href ? "is-active" : ""}`} aria-current={activeHref === href ? "page" : undefined}>
                 <Icon /><span>{label}</span>

@@ -1,4 +1,4 @@
-// Client workspace — server components read the store directly; interactive
+// Coachee workspace — server components read the store directly; interactive
 // pieces are client islands that POST to /api/v1/* and refresh.
 
 import { repo } from "@/lib/db/store";

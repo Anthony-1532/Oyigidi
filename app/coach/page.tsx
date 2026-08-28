@@ -16,7 +16,7 @@ export default async function CoachOverviewPage() {
   const pendingReviews = repo.aiSessions.openForCoach(person.id);
 
   const metrics = [
-    [String(clientIds.length), "Assigned clients", "Active coach-client relationships"],
+    [String(clientIds.length), "Assigned coachees", "Active coach-coachee relationships"],
     [String(programs.length), "Programs", `${programs.filter((p) => p.status === "active").length} active`],
     [String(pendingReviews.length), "Awaiting AI review", pendingReviews.length ? "Sessions need your oversight" : "Queue is clear"],
     [String(knowledge.filter((k) => k.status === "ready").length), "AI-ready sources", "Coach-approved retrieval material"],
@@ -39,7 +39,7 @@ export default async function CoachOverviewPage() {
         ))}
       </div>
       <section className="oy-section">
-        <h2 className="oy-section-title">Client development</h2>
+        <h2 className="oy-section-title">Coachee development</h2>
         <article className="oy-card oy-table-card" style={{ padding: 20 }}>
           {clientIds.length ? (
             <table className="oy-client-list">

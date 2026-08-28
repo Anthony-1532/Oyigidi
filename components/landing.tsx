@@ -6,8 +6,8 @@
 import { useState } from "react";
 
 const ROLES = [
-  { role: "client", name: "Aisha Mohammed", detail: "Client workspace — goals, reflections, coaching conversations" },
-  { role: "coach", name: "Samira Okonkwo", detail: "Coach workspace — clients, programs, knowledge, AI oversight" },
+  { role: "client", name: "Aisha Mohammed", detail: "Coachee workspace — goals, reflections, coaching conversations" },
+  { role: "coach", name: "Samira Okonkwo", detail: "Coach workspace — coachees, programs, knowledge, AI oversight" },
   { role: "admin", name: "Tony Anthony", detail: "Admin console — people, audit trail, frameworks, privacy tools" },
 ] as const;
 
