@@ -9,16 +9,24 @@ type Plan = { id: string; title: string; detail?: string; completed: boolean };
 export function ActionList({ plans }: { plans: Plan[] }) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const toggle = async (plan: Plan) => {
     setBusyId(plan.id);
+    setError(null);
     try {
-      await fetch("/api/v1/actions", {
+      const res = await fetch("/api/v1/actions", {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ id: plan.id, completed: !plan.completed }),
       });
+      if (!res.ok) {
+        setError("That action did not update. Try again.");
+        return;
+      }
       router.refresh();
+    } catch {
+      setError("That action did not update. Try again.");
     } finally {
       setBusyId(null);
     }
@@ -40,6 +48,7 @@ export function ActionList({ plans }: { plans: Plan[] }) {
         </div>
       </div>
     )) : <p className="oy-card-copy">No next actions yet — a compass check will create focused ones.</p>}
+    {error && <p className="oy-card-copy" style={{ color: "#a33b2e" }}>{error}</p>}
   </>;
 }
 
@@ -69,8 +78,21 @@ export function GoalControls({ goals }: { goals: Array<{ id: string; title: stri
 
   const updateGoal = async (id: string, progressPercent: number) => {
     const status = progressPercent >= 100 ? "completed" : "active";
-    const res = await fetch("/api/v1/goals", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ id, progressPercent, status }) });
-    if (res.ok) router.refresh();
+    setError(null);
+    try {
+      const res = await fetch("/api/v1/goals", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ id, progressPercent, status }) });
+      if (!res.ok) throw new Error("unsaved");
+      router.refresh();
+    } catch {
+      // Drop the local override: without this the slider keeps displaying the
+      // dragged value and the client believes progress was saved when it wasn't.
+      setLocalProgress((current) => {
+        const next = { ...current };
+        delete next[id];
+        return next;
+      });
+      setError("That progress update did not save — the slider has returned to your last saved value.");
+    }
   };
 
   return <>
@@ -114,24 +136,35 @@ export function GoalControls({ goals }: { goals: Array<{ id: string; title: stri
 export function RemoveButton({ endpoint, label }: { endpoint: string; label: string }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  const remove = async () => {
+    setPending(true);
+    setFailed(false);
+    try {
+      const res = await fetch(endpoint, { method: "DELETE" });
+      if (!res.ok) {
+        setFailed(true);
+        return;
+      }
+      router.refresh();
+    } catch {
+      setFailed(true);
+    } finally {
+      setPending(false);
+    }
+  };
+
   return (
     <button
       type="button"
       className="oy-link"
-      style={{ marginLeft: "auto" }}
+      style={{ marginLeft: "auto", color: failed ? "#a33b2e" : undefined }}
       disabled={pending}
       aria-label={label}
-      onClick={async () => {
-        setPending(true);
-        try {
-          const res = await fetch(endpoint, { method: "DELETE" });
-          if (res.ok) router.refresh();
-        } finally {
-          setPending(false);
-        }
-      }}
+      onClick={() => void remove()}
     >
-      Remove
+      {failed ? "Remove failed — retry" : "Remove"}
     </button>
   );
 }

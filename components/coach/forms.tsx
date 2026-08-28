@@ -128,11 +128,18 @@ export function CurriculumAdder({ moduleId }: { moduleId: string }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const add = async () => {
     setPending(true);
+    setError(null);
     try {
-      await coachAction({ action: "add-curriculum-item", moduleId, kind, title, content });
+      const result = await coachAction({ action: "add-curriculum-item", moduleId, kind, title, content });
+      if (!result.ok) {
+        // Keep the draft on screen — clearing it would discard authored content.
+        setError(result.message!);
+        return;
+      }
       setTitle("");
       setContent("");
       router.refresh();
@@ -150,6 +157,7 @@ export function CurriculumAdder({ moduleId }: { moduleId: string }) {
         <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Title" aria-label="Curriculum item title" required style={{ flex: 1, minWidth: 0, padding: "9px 11px", borderRadius: 8, border: "1px solid #e4d9cc", background: "#fffdf8" }} />
       </div>
       <textarea rows={2} value={content} onChange={(event) => setContent(event.target.value)} placeholder="Content or prompt" aria-label="Curriculum item content" required style={{ padding: "9px 11px", borderRadius: 8, border: "1px solid #e4d9cc", background: "#fffdf8", resize: "vertical" }} />
+      {error && <p className="oy-card-copy" style={{ color: "#a33b2e" }}>{error}</p>}
       <button type="submit" className="oy-button is-muted" disabled={pending || !title.trim() || !content.trim()}>{pending ? "Adding…" : "Add to module"}</button>
     </form>
   );
@@ -278,4 +286,106 @@ export function ReviewControls({ sessions }: { sessions: Array<{ id: string; sum
       </div>
     )) : <p className="oy-card-copy">New AI sessions appear here as your assigned clients coach with Oyigidi.</p>}
   </>;
+}
+
+/** Removal of an authored curriculum item. Two-step: authored content is not
+ *  recoverable once removed, so a stray click must not destroy it. */
+export function CurriculumItemRemover({ itemId, title }: { itemId: string; title: string }) {
+  const router = useRouter();
+  const [armed, setArmed] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const remove = async () => {
+    setPending(true);
+    setError(null);
+    try {
+      const result = await coachAction({ action: "remove-curriculum-item", itemId });
+      if (!result.ok) {
+        setError(result.message!);
+        return;
+      }
+      setArmed(false);
+      router.refresh();
+    } finally {
+      setPending(false);
+    }
+  };
+
+  if (error) {
+    return <button type="button" className="oy-link" style={{ color: "#a33b2e" }} onClick={() => { setError(null); setArmed(true); }}>Removal failed — retry</button>;
+  }
+
+  if (armed) {
+    return <>
+      <button type="button" className="oy-link" style={{ color: "#a33b2e" }} disabled={pending} onClick={() => void remove()}>{pending ? "Removing…" : "Confirm"}</button>
+      <button type="button" className="oy-link" style={{ color: "var(--oy-stone)" }} disabled={pending} onClick={() => setArmed(false)}>Keep</button>
+    </>;
+  }
+
+  return <button type="button" className="oy-link" aria-label={`Remove ${title}`} onClick={() => setArmed(true)}>Remove</button>;
+}
+
+/** Group session scheduling. The API requires a non-empty agenda and exercise
+ *  list, so both are entered one item per line and validated before sending. */
+export function SessionCreator({ programs }: { programs: Array<{ id: string; title: string }> }) {
+  const router = useRouter();
+  const [form, setForm] = useState({ programId: programs[0]?.id ?? "", cohortTitle: "", title: "", agenda: "", exercises: "" });
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const lines = (value: string) => value.split("\n").map((line) => line.trim()).filter(Boolean);
+  const agenda = lines(form.agenda);
+  const exercises = lines(form.exercises);
+  const ready = Boolean(form.programId) && form.cohortTitle.trim().length >= 3 && form.title.trim().length >= 3 && agenda.length > 0 && exercises.length > 0;
+
+  const create = async () => {
+    setPending(true);
+    setError(null);
+    try {
+      const result = await coachAction({ action: "create-group-session", programId: form.programId, cohortTitle: form.cohortTitle, title: form.title, agenda, exercises });
+      if (!result.ok) {
+        setError(result.message!);
+        return;
+      }
+      setForm({ programId: form.programId, cohortTitle: "", title: "", agenda: "", exercises: "" });
+      router.refresh();
+    } finally {
+      setPending(false);
+    }
+  };
+
+  if (!programs.length) {
+    return (
+      <article className="oy-card oy-builder" style={{ padding: 20 }}>
+        <div className="oy-card-label">Schedule a session</div>
+        <p className="oy-card-copy" style={{ marginTop: 10 }}>A group session belongs to a program. Author one under Programs first, then schedule a cohort around it.</p>
+        <a className="oy-button is-muted" href="/coach/programs" style={{ marginTop: 12 }}>Go to Programs</a>
+      </article>
+    );
+  }
+
+  const field = { width: "100%", marginTop: 6, padding: "10px 11px", borderRadius: 8, border: "1px solid #e4d9cc", background: "#fffdf8" } as const;
+
+  return (
+    <article className="oy-card oy-builder" style={{ padding: 20 }}>
+      <div className="oy-card-label">Schedule a session</div>
+      <form onSubmit={(event) => { event.preventDefault(); void create(); }}>
+        <label className="oy-question-domain" htmlFor="s-program" style={{ display: "block", marginTop: 10 }}>Program</label>
+        <select id="s-program" value={form.programId} onChange={(event) => setForm({ ...form, programId: event.target.value })} style={field}>
+          {programs.map((program) => <option key={program.id} value={program.id}>{program.title}</option>)}
+        </select>
+        <label className="oy-question-domain" htmlFor="s-cohort" style={{ display: "block", marginTop: 12 }}>Cohort</label>
+        <input id="s-cohort" required minLength={3} value={form.cohortTitle} onChange={(event) => setForm({ ...form, cohortTitle: event.target.value })} style={field} />
+        <label className="oy-question-domain" htmlFor="s-title" style={{ display: "block", marginTop: 12 }}>Session title</label>
+        <input id="s-title" required minLength={3} value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} style={field} />
+        <label className="oy-question-domain" htmlFor="s-agenda" style={{ display: "block", marginTop: 12 }}>Agenda — one item per line</label>
+        <textarea id="s-agenda" required rows={3} value={form.agenda} onChange={(event) => setForm({ ...form, agenda: event.target.value })} style={{ ...field, resize: "vertical" }} />
+        <label className="oy-question-domain" htmlFor="s-exercises" style={{ display: "block", marginTop: 12 }}>Exercises — one per line</label>
+        <textarea id="s-exercises" required rows={3} value={form.exercises} onChange={(event) => setForm({ ...form, exercises: event.target.value })} style={{ ...field, resize: "vertical" }} />
+        {error && <p className="oy-card-copy" style={{ color: "#a33b2e", marginTop: 10 }}>{error}</p>}
+        <button type="submit" className="oy-button" style={{ width: "100%", marginTop: 14 }} disabled={pending || !ready}>{pending ? "Scheduling…" : "Schedule session"}</button>
+      </form>
+    </article>
+  );
 }

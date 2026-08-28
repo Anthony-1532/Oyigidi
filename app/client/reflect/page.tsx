@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { getSession } from "@/lib/auth/session";
 import { repo } from "@/lib/db/store";
-import { PageIntro } from "@/components/shell";
+import { PageIntro, WorkspaceShell } from "@/components/shell";
 import { JournalEditor } from "@/components/client/forms";
 import { JournalList } from "@/components/client/journal-list";
 
@@ -9,7 +9,7 @@ export default async function ReflectPage() {
   const person = (await getSession(await headers()))!;
   const journals = repo.journals.listByClient(person.id);
   return (
-    <>
+    <WorkspaceShell person={person} activeHref="/client/reflect" sectionLabel="Client workspace" breadcrumb="Your development · Reflect">
       <PageIntro
         eyebrow="Reflect"
         title="Notice what is changing."
@@ -17,6 +17,6 @@ export default async function ReflectPage() {
         action={<JournalEditor />}
       />
       <JournalList journals={journals} />
-    </>
+    </WorkspaceShell>
   );
 }

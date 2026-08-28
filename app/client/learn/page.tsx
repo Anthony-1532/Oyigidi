@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { getSession } from "@/lib/auth/session";
 import { repo } from "@/lib/db/store";
-import { PageIntro } from "@/components/shell";
+import { PageIntro, WorkspaceShell } from "@/components/shell";
 import { AssessmentFlow } from "@/components/client/forms";
 
 export default async function LearnPage() {
@@ -11,7 +11,7 @@ export default async function LearnPage() {
   const latestResult = repo.assessments.latestResult(person.id);
 
   return (
-    <>
+    <WorkspaceShell person={person} activeHref="/client/learn" sectionLabel="Client workspace" breadcrumb="Your development · Learn">
       <PageIntro
         eyebrow="Learn"
         title={assessment ? "Find the most useful place to begin." : "No active compass check yet."}
@@ -34,6 +34,6 @@ export default async function LearnPage() {
           </article>
         </section>
       )}
-    </>
+    </WorkspaceShell>
   );
 }

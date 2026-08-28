@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { getSession } from "@/lib/auth/session";
 import { repo } from "@/lib/db/store";
 import { PageIntro, WorkspaceShell } from "@/components/shell";
-import { CurriculumAdder, ProgramBuilder } from "@/components/coach/forms";
+import { CurriculumAdder, CurriculumItemRemover, ProgramBuilder } from "@/components/coach/forms";
 
 export default async function CoachProgramsPage() {
   const person = (await getSession(await headers()))!;
@@ -41,7 +41,7 @@ export default async function CoachProgramsPage() {
                     {items.map((item) => (
                       <div className="oy-plan-item" key={item.id} style={{ padding: "6px 0 0 30px" }}>
                         <div style={{ minWidth: 0, flex: 1 }}><div className="oy-plan-detail">{item.kind === "lesson" ? "Lesson · " : "Exercise · "}{item.title}</div></div>
-                        <RemoveItemButton itemId={item.id} />
+                        <CurriculumItemRemover itemId={item.id} title={item.title} />
                       </div>
                     ))}
                     <CurriculumAdder moduleId={module.id} />
@@ -55,10 +55,4 @@ export default async function CoachProgramsPage() {
       </div>
     </WorkspaceShell>
   );
-}
-
-function RemoveItemButton({ itemId }: { itemId: string }) {
-  void itemId;
-  // Removal is available via the API; kept minimal in the demo UI.
-  return null;
 }

@@ -171,16 +171,24 @@ function GovernancePanel({ clients }: { clients: Person[] }) {
 export function FrameworkToggles({ frameworks }: { frameworks: Array<{ id: string; label: string; description?: string; enabled: boolean }> }) {
   const router = useRouter();
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const toggle = async (framework: { id: string; enabled: boolean }) => {
     setPendingId(framework.id);
+    setError(null);
     try {
-      await fetch("/api/v1/admin/people", {
+      const res = await fetch("/api/v1/admin/people", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ action: "toggle-framework", frameworkId: framework.id, enabled: !framework.enabled }),
       });
+      if (!res.ok) {
+        setError("That framework did not change. It remains as shown — try again.");
+        return;
+      }
       router.refresh();
+    } catch {
+      setError("That framework did not change. It remains as shown — try again.");
     } finally {
       setPendingId(null);
     }
@@ -199,6 +207,7 @@ export function FrameworkToggles({ frameworks }: { frameworks: Array<{ id: strin
           </button>
         </div>
       ))}
+      {error && <p className="oy-card-copy" style={{ color: "#a33b2e", marginTop: 10 }}>{error}</p>}
     </article>
   );
 }

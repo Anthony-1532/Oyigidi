@@ -4,7 +4,6 @@
 import { repo } from "@/lib/db/store";
 import type { Person } from "@/lib/shared/types";
 import { PageIntro, SafetyNote } from "@/components/shell";
-import { ChatPanel } from "@/components/client/chat-panel";
 import { ActionList } from "@/components/client/forms";
 
 export function ClientWorkspace({ person }: { person: Person }) {
@@ -46,25 +45,14 @@ export function ClientWorkspace({ person }: { person: Person }) {
 
     <section className="oy-section">
       <div className="oy-section-header">
-        <h2 className="oy-section-title">Continue with Oyigidi</h2>
-        <a className="oy-link" href="/client/coach">Open full coach space →</a>
+        <h2 className="oy-section-title">Your next actions</h2>
+        <a className="oy-link" href="/client/coach">Continue with Oyigidi →</a>
       </div>
-      <div className="oy-client-body">
-        <ChatPanel preferredName={person.preferredName ?? "there"} initialMessages={initialMessagesFor(clientId)} />
-        <aside>
-          <article className="oy-card oy-plan-card" style={{ padding: 20 }}>
-            <div className="oy-card-label">Your next actions</div>
-            <h3 className="oy-card-heading">Small steps, visible momentum</h3>
-            <ActionList plans={plans} />
-          </article>
-          <SafetyNote>Oyigidi supports coaching and self-development. It is not a crisis or clinical-care service.</SafetyNote>
-        </aside>
-      </div>
+      <article className="oy-card oy-plan-card" style={{ padding: 20 }}>
+        <h3 className="oy-card-heading">Small steps, visible momentum</h3>
+        <ActionList plans={plans} />
+      </article>
+      <SafetyNote style={{ marginTop: 14 }}>Oyigidi supports coaching and self-development. It is not a crisis or clinical-care service.</SafetyNote>
     </section>
   </>;
-}
-
-function initialMessagesFor(clientId: string) {
-  const conversation = repo.conversations.forClient(clientId);
-  return conversation ? repo.messages.forConversation(conversation.id) : [];
 }

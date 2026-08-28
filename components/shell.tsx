@@ -8,6 +8,7 @@ import {
   LayoutDashboard, ListChecks, Settings2, UsersRound,
 } from "lucide-react";
 import type { Person } from "@/lib/shared/types";
+import { SignOutButton } from "@/components/sign-out-button";
 
 type NavItem = [label: string, href: string, Icon: LucideIcon];
 
@@ -74,7 +75,7 @@ export function WorkspaceShell({
                 <div className="oy-person-detail">{sectionLabel}</div>
               </div>
             </div>
-            <a className="oy-link" href="/api/v1/session/signout" style={{ color: "#cfc5bb", marginTop: 10 }}>Sign out</a>
+            <SignOutButton style={{ color: "#cfc5bb", marginTop: 10 }} />
           </div>
         </aside>
         <main className="oy-main">
@@ -84,6 +85,13 @@ export function WorkspaceShell({
               <div className="oy-breadcrumb"><span>Oyigidi</span><span> / </span><strong>{breadcrumb}</strong></div>
             </div>
           </header>
+          <nav className="oy-mobile-nav" aria-label={`${person.role} navigation`}>
+            {nav.map(([label, href, Icon]) => (
+              <Link key={href} href={href} className={`oy-mobile-nav-button ${activeHref === href ? "is-active" : ""}`} aria-current={activeHref === href ? "page" : undefined}>
+                <Icon /><span>{label}</span>
+              </Link>
+            ))}
+          </nav>
           <div className="oy-content">{children}</div>
         </main>
       </div>
