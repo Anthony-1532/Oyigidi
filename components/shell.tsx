@@ -84,6 +84,12 @@ export function WorkspaceShell({
               <div className="oy-mobile-brand"><span className="oy-brand-mark">o</span><span>oyigidi</span><span className="oy-mobile-context">{sectionLabel}</span></div>
               <div className="oy-breadcrumb"><span>Oyigidi</span><span> / </span><strong>{breadcrumb}</strong></div>
             </div>
+            {/* The sidebar (and its sign-out) is display:none below 840px, so
+                the only way out on a phone lives here. */}
+            <div className="oy-topbar-mobile-actions">
+              <span className="oy-topbar-person">{displayName}</span>
+              <SignOutButton />
+            </div>
           </header>
           <nav className="oy-mobile-nav" aria-label={`${person.role} navigation`}>
             {nav.map(([label, href, Icon]) => (

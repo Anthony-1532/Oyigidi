@@ -33,8 +33,8 @@ export function SignInSection() {
   };
 
   return (
-    <div className="oy-app" style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 24 }}>
-      <article className="oy-card oy-plan-card" style={{ maxWidth: 660, padding: 28 }}>
+    <div className="oy-app oy-signin-page">
+      <article className="oy-card oy-plan-card oy-signin-card">
         <div className="oy-brand"><span className="oy-brand-mark">o</span><span>oyigidi</span></div>
         <div className="oy-card-label" style={{ marginTop: 24 }}>Oyigidi AI</div>
         <h1 className="oy-page-title" style={{ marginTop: 10 }}>Coaching intelligence with a human in the loop.</h1>
@@ -46,11 +46,11 @@ export function SignInSection() {
           <span className="oy-card-label">Choose a demo identity</span>
           <span className="oy-preview-tag">No passwords · sessions are mocked</span>
         </div>
-        <div style={{ display: "grid", gap: 9 }}>
+        <div className="oy-role-choices">
           {ROLES.map(({ role, name, detail }) => (
-            <button key={role} type="button" className="oy-button is-muted" style={{ justifyContent: "flex-start", padding: "13px 15px", minHeight: 0 }} disabled={pending} onClick={() => void signIn(role)}>
-              <strong style={{ minWidth: 52, textAlign: "left", textTransform: "capitalize" }}>{role}</strong>
-              <span style={{ fontWeight: 400, fontSize: 12 }}>{name} · {detail}</span>
+            <button key={role} type="button" className="oy-button is-muted oy-role-choice" disabled={pending} onClick={() => void signIn(role)}>
+              <strong>{role}</strong>
+              <span>{name} · {detail}</span>
             </button>
           ))}
         </div>
