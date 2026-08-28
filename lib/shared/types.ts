@@ -211,3 +211,36 @@ export interface FrameworkSetting {
   description?: string;
   enabled: boolean;
 }
+
+/** A guided reflective practice: a short paced sequence a coachee moves
+ *  through alone, as a second way of working with the coach's material
+ *  alongside text conversation. Reflective and non-clinical by design — these
+ *  are coaching exercises, not therapeutic or crisis interventions. */
+export interface Practice {
+  id: string;
+  title: string;
+  intention: string;
+  focus: string;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface PracticeStep {
+  id: string;
+  practiceId: string;
+  /** `breath` steps show a pacer; `reflect` steps invite a written answer. */
+  kind: "settle" | "breath" | "reflect" | "close";
+  title: string;
+  body: string;
+  seconds: number;
+  position: number;
+}
+
+export interface PracticeCompletion {
+  id: string;
+  clientId: string;
+  practiceId: string;
+  reflection?: string;
+  secondsPresent: number;
+  completedAt: string;
+}

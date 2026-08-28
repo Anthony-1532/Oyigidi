@@ -10,13 +10,14 @@
 import type {
   ActionPlanItem, AiSession, Assessment, AssessmentQuestion, AssessmentResult, AuditRecord, ChatMessage,
   CoachAssignment, Conversation, CurriculumItem, Enrollment, FollowupAction, FrameworkSetting, Goal,
-  GroupSession, JournalEntry, KnowledgeChunk, KnowledgeDocument, LearningObjective, Person, Program,
-  ProgramModule, ProgressEvent,
+  GroupSession, JournalEntry, KnowledgeChunk, KnowledgeDocument, LearningObjective, Person, Practice,
+  PracticeCompletion, PracticeStep, Program, ProgramModule, ProgressEvent,
 } from "@/lib/shared/types";
 import {
   aiSessionsSeed, assignmentsSeed, assessmentsSeed, auditSeed, chunksSeed, conversationsSeed,
   documentsSeed, enrollmentsSeed, eventsSeed, followupsSeed, frameworksSeed, goalsSeed, itemsSeed,
-  journalsSeed, messagesSeed, modulesSeed, objectivesSeed, peopleSeed, plansSeed, programsSeed,
+  journalsSeed, messagesSeed, modulesSeed, objectivesSeed, peopleSeed, plansSeed,
+  practiceCompletionsSeed, practicesSeed, practiceStepsSeed, programsSeed,
   questionsSeed, resultsSeed, sessionsSeed,
 } from "@/data/seed";
 import { ConflictError, newId } from "@/lib/shared/validation";
@@ -45,6 +46,9 @@ interface DbState {
   aiSessions: AiSession[];
   auditLog: AuditRecord[];
   frameworks: FrameworkSetting[];
+  practices: Practice[];
+  practiceSteps: PracticeStep[];
+  practiceCompletions: PracticeCompletion[];
 }
 
 const globalForDb = globalThis as unknown as { __oyigidiDb?: DbState };
@@ -75,6 +79,9 @@ const db: DbState =
     aiSessions: aiSessionsSeed.map((s) => ({ ...s })),
     auditLog: auditSeed.map((a) => ({ ...a })),
     frameworks: frameworksSeed.map((f) => ({ ...f })),
+    practices: practicesSeed.map((p) => ({ ...p })),
+    practiceSteps: practiceStepsSeed.map((s) => ({ ...s })),
+    practiceCompletions: practiceCompletionsSeed.map((c) => ({ ...c })),
   });
 
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
@@ -187,6 +194,19 @@ export const repo = {
     saveResult: (row: Omit<AssessmentResult, "id">) => {
       const created = { ...clone(row), id: newId("ar") };
       db.results.unshift(created);
+      return clone(created);
+    },
+  },
+  practices: {
+    listActive: () => clone(db.practices.filter((p) => p.active)).sort((a, b) => a.title.localeCompare(b.title)),
+    get: (id: string) => clone(findOr404(db.practices, id, "Practice")),
+    stepsFor: (practiceId: string) =>
+      clone(db.practiceSteps.filter((s) => s.practiceId === practiceId)).sort((a, b) => a.position - b.position),
+    completionsFor: (clientId: string) =>
+      clone(db.practiceCompletions.filter((c) => c.clientId === clientId)).sort((a, b) => b.completedAt.localeCompare(a.completedAt)),
+    complete: (row: Omit<PracticeCompletion, "id" | "completedAt">) => {
+      const created = { ...clone(row), id: newId("pcm"), completedAt: new Date().toISOString() };
+      db.practiceCompletions.unshift(created);
       return clone(created);
     },
   },

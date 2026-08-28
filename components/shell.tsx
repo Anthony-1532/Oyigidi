@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import {
   Bot, BookOpen, CalendarDays, ClipboardList, FolderUp, Goal, GraduationCap,
-  LayoutDashboard, ListChecks, Settings2, UsersRound,
+  LayoutDashboard, ListChecks, Settings2, Sparkles, UsersRound,
 } from "lucide-react";
 import type { Person } from "@/lib/shared/types";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -18,6 +18,7 @@ export const NAV: Record<Person["role"], NavItem[]> = {
     ["My journey", "/client/journey", Goal],
     ["Coach", "/client/coach", GraduationCap],
     ["Learn", "/client/learn", ClipboardList],
+    ["Practice", "/client/practice", Sparkles],
     ["Reflect", "/client/reflect", BookOpen],
   ],
   coach: [

@@ -2,8 +2,8 @@
 import type {
   AiSession, Assessment, AssessmentQuestion, AssessmentResult, AuditRecord, ChatMessage,
   CoachAssignment, Conversation, CurriculumItem, Enrollment, FollowupAction, FrameworkSetting, Goal,
-  GroupSession, JournalEntry, KnowledgeChunk, KnowledgeDocument, LearningObjective, Person, Program,
-  ProgramModule, ProgressEvent,
+  GroupSession, JournalEntry, KnowledgeChunk, KnowledgeDocument, LearningObjective, Person, Practice,
+  PracticeCompletion, PracticeStep, Program, ProgramModule, ProgressEvent,
 } from "@/lib/shared/types";
 
 const now = () => new Date().toISOString();
@@ -117,6 +117,33 @@ export const auditSeed: AuditRecord[] = [
 export const frameworksSeed: FrameworkSetting[] = [
   { id: "fw_1", label: "Development Compass", description: "Self-development assessment across clarity, energy, confidence, and connection.", enabled: true },
   { id: "fw_2", label: "Eisenhower Prioritization", description: "Educational decision framework available in coach-authored curriculum.", enabled: true },
+];
+
+export const practicesSeed: Practice[] = [
+  { id: "pc_1", title: "Settle before a hard conversation", intention: "Arrive steady instead of rehearsed, so the conversation can go somewhere you did not script.", focus: "Composure", active: true, createdAt: daysAgo(20) },
+  { id: "pc_2", title: "Notice what actually changed", intention: "Catch the progress that moves too slowly to feel, before deciding what is next.", focus: "Perspective", active: true, createdAt: daysAgo(14) },
+  { id: "pc_3", title: "Name the real constraint", intention: "Separate the problem you keep describing from the one genuinely holding things still.", focus: "Clarity", active: true, createdAt: daysAgo(7) },
+];
+
+export const practiceStepsSeed: PracticeStep[] = [
+  { id: "ps_1", practiceId: "pc_1", kind: "settle", title: "Put the meeting down", body: "You are not preparing yet. Let your shoulders drop and let the room be the room for a moment.", seconds: 30, position: 1 },
+  { id: "ps_2", practiceId: "pc_1", kind: "breath", title: "Lengthen the out-breath", body: "In for four, out for six. The longer exhale is what settles you — let the count carry it rather than forcing anything.", seconds: 60, position: 2 },
+  { id: "ps_3", practiceId: "pc_1", kind: "reflect", title: "What do you want to be true afterwards?", body: "Not what you want to say. What you want to be true between you once it is over.", seconds: 90, position: 3 },
+  { id: "ps_4", practiceId: "pc_1", kind: "close", title: "Carry one sentence in", body: "Keep the answer you just wrote. Leave the rehearsal behind.", seconds: 20, position: 4 },
+
+  { id: "ps_5", practiceId: "pc_2", kind: "settle", title: "Come back to the week", body: "Not the calendar — the week as you actually lived it.", seconds: 30, position: 1 },
+  { id: "ps_6", practiceId: "pc_2", kind: "breath", title: "Three unhurried breaths", body: "Let each one finish completely before the next begins. There is nothing to get right here.", seconds: 45, position: 2 },
+  { id: "ps_7", practiceId: "pc_2", kind: "reflect", title: "What is easier now than a month ago?", body: "Something small counts. Something you only noticed because it stopped costing you anything counts most.", seconds: 90, position: 3 },
+  { id: "ps_8", practiceId: "pc_2", kind: "close", title: "Let it be evidence", body: "That is data about your direction, not a reason to push harder.", seconds: 20, position: 4 },
+
+  { id: "ps_9", practiceId: "pc_3", kind: "settle", title: "Set the story down", body: "You have explained this situation many times. Put the explanation aside for a minute.", seconds: 30, position: 1 },
+  { id: "ps_10", practiceId: "pc_3", kind: "breath", title: "Steady the pace", body: "In for four, out for six, until the urge to solve it quietens a little.", seconds: 60, position: 2 },
+  { id: "ps_11", practiceId: "pc_3", kind: "reflect", title: "If one thing were different, what unlocks?", body: "Write the one condition. If several come, keep the one the others depend on.", seconds: 120, position: 3 },
+  { id: "ps_12", practiceId: "pc_3", kind: "close", title: "Take it to your coach", body: "A named constraint is a far better starting point than a described problem.", seconds: 20, position: 4 },
+];
+
+export const practiceCompletionsSeed: PracticeCompletion[] = [
+  { id: "pcm_1", clientId: "usr_client", practiceId: "pc_2", reflection: "Interrupting less in reviews. I noticed I waited for David to finish twice without planning to.", secondsPresent: 185, completedAt: daysAgo(4) },
 ];
 
 export const stamp = now;
